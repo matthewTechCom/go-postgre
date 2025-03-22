@@ -1,10 +1,10 @@
+// cmd/main.go
 package main
 
 import (
 	"fmt"
 	"log"
 
-	"github.com/matthewTechCom/progate_hackathon/chatgptapi"
 	"github.com/matthewTechCom/progate_hackathon/config"
 	"github.com/matthewTechCom/progate_hackathon/controller"
 	"github.com/matthewTechCom/progate_hackathon/db"
@@ -25,34 +25,29 @@ func main() {
 	// DB接続の初期化
 	dbConn := db.InitDB(cfg)
 
-	// テーブル作成
+	// マイグレーション：board, stickyテーブル作成
 	migrate.Migrate(cfg)
 
 	// リポジトリの初期化
-	boardRepo := repository.NewBoardSummaryRepository(dbConn)
+	boardRepo := repository.NewBoardRepository(dbConn)
+	stickyRepo := repository.NewStickyRepository(dbConn)
 
-	// 外部APIクライアントの初期化
-	miroClient := miroapi.NewMiroAPI(cfg.MiroAPIToken) 
-	chatGPTClient := chatgptapi.NewChatGPTAPI(cfg.OpenAIApiKey)
+	// 外部APIクライアントの初期化（Miro API）
+	miroClient := miroapi.NewMiroAPI(cfg.MiroAPIToken)
 
-	// ユースケースの初期化
-	boardUsecase := usecase.NewBoardSummaryUsecase(boardRepo, miroClient, chatGPTClient)
-	
+	// ユースケースの初期化（Miroから情報を取得し、DBに保存する処理）
+	widgetUsecase := usecase.NewWidgetUsecase(boardRepo, stickyRepo, miroClient)
+
 	// Validatorの初期化
-	validator := validator.NewValidator()
+	v := validator.NewValidator()
 
 	// コントローラーの初期化
-	boardController := controller.NewBoardSummaryController(boardUsecase, validator)
+	widgetController := controller.NewWidgetController(widgetUsecase, v)
 
 	// echoのルーター設定
 	e := echo.New()
-
-	// CORS ミドルウェアを適用
 	e.Use(middleware.CORSMiddleware())
-	// CSRF ミドルウェアを適用
-	e.Use(middleware.CSRFMiddleware())
-
-	router.SetupRoutes(e, boardController)
+	router.SetupRoutes(e, widgetController)
 
 	// サーバー起動
 	start := fmt.Sprintf(":%s", cfg.ServerPort)
