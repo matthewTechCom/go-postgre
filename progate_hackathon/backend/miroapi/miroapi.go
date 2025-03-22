@@ -15,7 +15,6 @@ type Widget struct {
 	ID string `json:"id"`
 	Type string `json:"type"`
 	Text string `json:"text"`
-	WidgetID string `json:"widgetId"`
 }
 
 type MiroAPI struct{
@@ -56,6 +55,11 @@ func (api *MiroAPI) GetWidgets(boardID, accessToken string) ([]Widget, error) {
 
 	// 取得したウィジェット数をログ出力してデバッグ
 	fmt.Printf("取得したウィジェット件数: %d\n", len(widgetsResp.Data))
-	
+
+	// 各ウィジェットの情報をデバッグ出力
+	for _, widget := range widgetsResp.Data {
+		fmt.Printf("Widget ID: %s,  Text: %s\n", widget.ID, widget.Text)
+	}
+
 	return widgetsResp.Data, nil
 }

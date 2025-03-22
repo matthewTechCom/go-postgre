@@ -5,6 +5,6 @@ import (
 	"github.com/matthewTechCom/progate_hackathon/controller"
 )
 
-func SetupRoutes(e *echo.Echo, boardController controller.BoardSummaryControllerInterface) {
-	e.GET("/process-board", boardController.ProcessBoard)
+func SetupRoutes(e *echo.Echo, boardController controller.WidgetControllerInterface) {
+	e.POST("/process-board", boardController.ProcessBoard)
 }

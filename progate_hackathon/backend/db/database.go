@@ -7,26 +7,20 @@ import (
 	
 	"github.com/matthewTechCom/progate_hackathon/config"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
-// MySQLへの接続を初期化して*sql.DBを返す
 func InitDB(cfg *config.Config) *sql.DB {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", 
-	cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
-	db, err := sql.Open("mysql", dsn)
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatalf("MySQL接続に失敗しました: %v", err)
+		log.Fatalf("PostgreSQL接続に失敗しました: %v", err)
 	}
+	// データベースが応答しているか
 	if err := db.Ping(); err != nil {
-		log.Fatalf("MySQLへのPingに失敗しました: %v", err)
+		log.Fatalf("PostgreSQLへのPingに失敗しました: %v", err)
 	}
-
-	// // オプション：接続プールの設定
-	// db.SetMaxOpenConns(10)
-	// db.SetMaxIdleConns(5)
-
-	log.Println("MySQL接続に成功しました")
+	log.Println("PostgreSQL接続に成功しました")
 	return db
-
 }
