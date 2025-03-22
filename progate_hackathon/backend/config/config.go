@@ -15,6 +15,8 @@ type Config struct {
 	DBName       string
 	ServerPort   string
 	MiroAPIToken string
+	DefaultBoardID  string
+	DefaultAccessToken string
 }
 
 func LoadConfig() *Config {
@@ -30,5 +32,7 @@ func LoadConfig() *Config {
         DBName:       os.Getenv("DB_NAME"),
         ServerPort:   os.Getenv("SERVER_PORT"),
 		MiroAPIToken: os.Getenv("MIRO_ACCESS_TOKEN"),
+		DefaultBoardID:  os.Getenv("MIRO_BOARD_ID"), 
+		DefaultAccessToken: os.Getenv("MIRO_ACCESS_TOKEN"), 
     }
 }

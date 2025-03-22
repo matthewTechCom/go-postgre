@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
+	"html"
 )
 
 type MiroAPIInterface interface {
@@ -24,6 +26,13 @@ type MiroAPI struct{
 // MiroAPIのコンストラクタ
 func NewMiroAPI(token string) MiroAPIInterface {
 	return &MiroAPI{Token: token}
+}
+
+// HTMLタグを除く処理
+func removeHTMLTags(input string) string {
+	decoded := html.UnescapeString(input)
+	re := regexp.MustCompile("<[^>]*>")
+	return re.ReplaceAllString(decoded, "")
 }
 
 // 指定されたボードIDとアクセストークンでMiro APIから全体情報を取得する
@@ -51,6 +60,11 @@ func (api *MiroAPI) GetWidgets(boardID, accessToken string) ([]Widget, error) {
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&widgetsResp); err != nil {
 		return nil, err
+	}
+
+	// HTMLタグを削除
+	for i := range widgetsResp.Data {
+		widgetsResp.Data[i].Text = removeHTMLTags(widgetsResp.Data[i].Text)
 	}
 
 	// 取得したウィジェット数をログ出力してデバッグ
